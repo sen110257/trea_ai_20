@@ -86,15 +86,58 @@
           <van-icon :name="isFavorite ? 'star' : 'star-o'" :color="isFavorite ? '#FFD700' : '#999999'" />
           <span>{{ isFavorite ? '已收藏' : '收藏' }}</span>
         </div>
-        <div class="action-item">
-          <van-icon name="shopping-cart-o" color="#999999" />
+        <div class="action-item" @click="addToCart">
+          <van-icon name="shopping-cart-o" :color="cartCount > 0 ? '#2D5A27' : '#999999'" />
           <span>购物车</span>
+          <van-badge v-if="cartCount > 0" :content="cartCount" class="cart-badge" />
         </div>
       </div>
-      <van-button type="primary" block round>
+      <van-button type="primary" block round @click="showConsultPopup = true">
         立即咨询
       </van-button>
     </div>
+    
+    <van-popup
+      v-model:show="showConsultPopup"
+      round
+      position="bottom"
+      :style="{ height: '60%' }"
+    >
+      <div class="consult-popup">
+        <div class="popup-header flex-between">
+          <div class="popup-title">咨询客服</div>
+          <van-icon name="cross" size="20" @click="showConsultPopup = false" />
+        </div>
+        
+        <div class="consult-content">
+          <div class="consult-info">
+            <div class="info-label">商品</div>
+            <div class="info-value">{{ equipment?.name }}</div>
+          </div>
+          
+          <div class="consult-info">
+            <div class="info-label">价格</div>
+            <div class="info-value price">¥{{ equipment?.price }}</div>
+          </div>
+          
+          <van-field
+            v-model="consultMessage"
+            type="textarea"
+            placeholder="请输入您想咨询的问题..."
+            :maxlength="200"
+            show-word-limit
+            autosize
+            rows="4"
+          />
+        </div>
+        
+        <div class="popup-footer">
+          <van-button type="primary" block round @click="sendConsult">
+            发送
+          </van-button>
+        </div>
+      </div>
+    </van-popup>
   </div>
 </template>
 
@@ -110,6 +153,10 @@ const equipmentStore = useEquipmentStore()
 
 const equipment = ref(null)
 const isFavorite = ref(false)
+const showConsultPopup = ref(false)
+const consultMessage = ref('')
+
+const cartCount = computed(() => equipmentStore.cartCount)
 
 onMounted(() => {
   const equipmentId = parseInt(route.params.id)
@@ -126,6 +173,23 @@ function toggleFavorite() {
     isFavorite.value = equipmentStore.isFavorite(equipment.value.id)
     showToast(isFavorite.value ? '已收藏' : '已取消收藏')
   }
+}
+
+function addToCart() {
+  if (equipment.value) {
+    equipmentStore.addToCart(equipment.value, 1)
+    showToast('已加入购物车')
+  }
+}
+
+function sendConsult() {
+  if (!consultMessage.value.trim()) {
+    showToast('请输入咨询内容')
+    return
+  }
+  showToast('消息已发送，客服会尽快回复您')
+  consultMessage.value = ''
+  showConsultPopup.value = false
 }
 </script>
 
@@ -315,5 +379,67 @@ function toggleFavorite() {
   flex: 1;
   height: 44px;
   font-size: 15px;
+}
+
+.action-item {
+  position: relative;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+}
+
+.consult-popup {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.popup-header {
+  padding: 16px;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.popup-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1A1A1A;
+}
+
+.consult-content {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.consult-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  
+  .info-label {
+    font-size: 14px;
+    color: #999999;
+    width: 60px;
+  }
+  
+  .info-value {
+    font-size: 14px;
+    color: #1A1A1A;
+    
+    &.price {
+      color: #E64340;
+      font-weight: 600;
+      font-size: 16px;
+    }
+  }
+}
+
+.popup-footer {
+  padding: 12px 16px;
+  padding-bottom: calc(12px + var(--safe-area-bottom));
+  border-top: 1px solid #F0F0F0;
 }
 </style>

@@ -40,7 +40,8 @@ import {
   Toast,
   Loading,
   Overlay,
-  CountDown
+  CountDown,
+  Picker
 } from 'vant'
 import App from './App.vue'
 import 'vant/lib/index.css'
@@ -251,5 +252,6 @@ app.use(Toast)
 app.use(Loading)
 app.use(Overlay)
 app.use(CountDown)
+app.use(Picker)
 
 app.mount('#app')

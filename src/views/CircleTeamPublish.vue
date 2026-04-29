@@ -105,15 +105,66 @@
       </van-form>
     </div>
     
-    <van-datetime-picker
+    <van-popup
       v-model:show="showTimePicker"
-      type="datetime"
-      :min-date="minDate"
-      :max-date="maxDate"
-      title="选择出发时间"
-      @confirm="onTimeConfirm"
-      @cancel="showTimePicker = false"
-    />
+      round
+      position="bottom"
+      :style="{ height: '60%' }"
+    >
+      <div class="time-picker-popup">
+        <div class="popup-header flex-between">
+          <div class="popup-title">选择出发时间</div>
+          <div class="popup-actions">
+            <span class="cancel-btn" @click="showTimePicker = false">取消</span>
+            <span class="confirm-btn" @click="confirmDateTime">确定</span>
+          </div>
+        </div>
+        
+        <div class="picker-content">
+          <div class="picker-tabs">
+            <div 
+              class="picker-tab" 
+              :class="{ active: timePickerTab === 'date' }"
+              @click="timePickerTab = 'date'"
+            >
+              选择日期
+            </div>
+            <div 
+              class="picker-tab" 
+              :class="{ active: timePickerTab === 'time' }"
+              @click="timePickerTab = 'time'"
+            >
+              选择时间
+            </div>
+          </div>
+          
+          <div v-show="timePickerTab === 'date'" class="calendar-wrapper">
+            <van-calendar
+              v-model="selectedDate"
+              :min-date="minDate"
+              :max-date="maxDate"
+              color="#2D5A27"
+              @confirm="onDateConfirm"
+            />
+          </div>
+          
+          <div v-show="timePickerTab === 'time'" class="time-picker-wrapper">
+            <van-picker
+              v-model="timePickerIndex"
+              :columns="timeColumns"
+              title="选择时间"
+              show-toolbar="false"
+              @change="onTimeChange"
+            />
+          </div>
+          
+          <div class="selected-preview">
+            <span class="preview-label">已选择：</span>
+            <span class="preview-value">{{ formatDateTime }}</span>
+          </div>
+        </div>
+      </div>
+    </van-popup>
     
     <van-popup
       v-model:show="showTagPopup"
@@ -178,6 +229,32 @@ const showTagPopup = ref(false)
 const minDate = ref(new Date())
 const maxDate = ref(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000))
 
+const timePickerTab = ref('date')
+const selectedDate = ref(new Date())
+const selectedTime = ref('09:00')
+const timePickerIndex = ref([9, 0])
+
+const timeColumns = computed(() => {
+  const hours = []
+  const minutes = []
+  for (let i = 0; i < 24; i++) {
+    hours.push({ text: `${i.toString().padStart(2, '0')}时`, value: i })
+  }
+  for (let i = 0; i < 60; i += 5) {
+    minutes.push({ text: `${i.toString().padStart(2, '0')}分`, value: i })
+  }
+  return [hours, minutes]
+})
+
+const formatDateTime = computed(() => {
+  if (!selectedDate.value) return '请选择日期和时间'
+  const date = new Date(selectedDate.value)
+  const year = date.getFullYear()
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  const day = date.getDate().toString().padStart(2, '0')
+  return `${year}-${month}-${day} ${selectedTime.value}`
+})
+
 const form = ref({
   title: '',
   departure: '',
@@ -195,8 +272,22 @@ const customTag = ref('')
 
 const recommendedTags = ['自驾', '周末游', '小长假', '亲子游', '星空露营', '日出', '烧烤', '钓鱼', '摄影', '徒步']
 
-function onTimeConfirm(value) {
-  form.value.departTime = new Date(value).toLocaleString()
+function onDateConfirm(value) {
+  selectedDate.value = value
+}
+
+function onTimeChange(picker, values, index) {
+  const hour = values[0].value.toString().padStart(2, '0')
+  const minute = values[1].value.toString().padStart(2, '0')
+  selectedTime.value = `${hour}:${minute}`
+}
+
+function confirmDateTime() {
+  if (!selectedDate.value) {
+    showToast('请选择日期')
+    return
+  }
+  form.value.departTime = formatDateTime.value
   showTimePicker.value = false
 }
 
@@ -379,5 +470,82 @@ function onSubmit(values) {
   border-color: #2D5A27;
   color: #2D5A27;
   background: rgba(45, 90, 39, 0.05);
+}
+
+.time-picker-popup {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.picker-tabs {
+  display: flex;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.picker-tab {
+  flex: 1;
+  text-align: center;
+  padding: 12px 0;
+  font-size: 14px;
+  color: #666666;
+  
+  &.active {
+    color: #2D5A27;
+    font-weight: 500;
+    border-bottom: 2px solid #2D5A27;
+  }
+}
+
+.picker-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.calendar-wrapper {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.time-picker-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.popup-actions {
+  display: flex;
+  gap: 20px;
+}
+
+.cancel-btn {
+  font-size: 14px;
+  color: #999999;
+}
+
+.confirm-btn {
+  font-size: 14px;
+  color: #2D5A27;
+  font-weight: 500;
+}
+
+.selected-preview {
+  padding: 12px 16px;
+  border-top: 1px solid #F0F0F0;
+  text-align: center;
+  
+  .preview-label {
+    font-size: 13px;
+    color: #999999;
+  }
+  
+  .preview-value {
+    font-size: 14px;
+    color: #2D5A27;
+    font-weight: 500;
+  }
 }
 </style>
