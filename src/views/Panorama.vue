@@ -8,40 +8,40 @@
     
     <div class="panorama-content">
       <div class="panorama-container">
-        <div class="panorama-viewer" @touchstart="onTouchStart" @touchmove="onTouchMove" @touchend="onTouchEnd">
+        <div class="panorama-viewer">
           <van-swipe
-          ref="swipeRef"
-          class="panorama-swipe"
-          :show-indicators="false"
-          :autoplay="0"
-        >
-          <van-swipe-item v-for="(image, index) in panoramaImages" :key="index">
-            <van-image :src="image" fit="cover" class="panorama-image" />
-          </van-swipe-item>
-        </van-swipe>
-        
-        <div class="view-info">
-          <div class="info-title">{{ camp.name }}</div>
-          <div class="info-location">
-            <van-icon name="location-o" />
-            <span>{{ camp.location }}</span>
+            class="panorama-swipe"
+            :show-indicators="false"
+            :autoplay="0"
+            @change="onSwipeChange"
+          >
+            <van-swipe-item v-for="(image, index) in panoramaImages" :key="index">
+              <van-image :src="image" fit="cover" class="panorama-image" />
+            </van-swipe-item>
+          </van-swipe>
+          
+          <div class="view-info">
+            <div class="info-title">{{ camp.name }}</div>
+            <div class="info-location">
+              <van-icon name="location-o" />
+              <span>{{ camp.location }}</span>
+            </div>
           </div>
-        </div>
-        
-        <div class="view-hint">
-          <van-icon name="arrow-left" />
-          <span>左右滑动查看更多视角</span>
-          <van-icon name="arrow" />
-        </div>
-        
-        <div class="indicator-dots">
-          <span
-            v-for="(image, index) in panoramaImages"
-            :key="index"
-            class="dot"
-            :class="{ active: currentIndex === index }"
-          ></span>
-        </div>
+          
+          <div class="view-hint">
+            <van-icon name="arrow-left" />
+            <span>左右滑动查看更多视角</span>
+            <van-icon name="arrow" />
+          </div>
+          
+          <div class="indicator-dots">
+            <span
+              v-for="(image, index) in panoramaImages"
+              :key="index"
+              class="dot"
+              :class="{ active: currentIndex === index }"
+            ></span>
+          </div>
         </div>
       </div>
       
@@ -136,39 +136,8 @@ const zones = computed(() => campStore.zoneList)
 const panoramaImages = computed(() => camp.value.panoramaImages)
 const currentIndex = ref(0)
 
-const touchStartX = ref(0)
-const touchStartY = ref(0)
-const touchStartTime = ref(0)
-
-function onTouchStart(event) {
-  touchStartX.value = event.touches[0].clientX
-  touchStartY.value = event.touches[0].clientY
-  touchStartTime.value = Date.now()
-}
-
-function onTouchMove(event) {
-  const touchX = event.touches[0].clientX
-  const touchY = event.touches[0].clientY
-  const deltaX = touchX - touchStartX.value
-  const deltaY = touchY - touchStartY.value
-  
-  if (Math.abs(deltaX) > Math.abs(deltaY)) {
-    event.preventDefault()
-  }
-}
-
-function onTouchEnd(event) {
-  const touchEndX = event.changedTouches[0].clientX
-  const deltaX = touchEndX - touchStartX.value
-  const deltaTime = Date.now() - touchStartTime.value
-  
-  if (Math.abs(deltaX) > 50 && deltaTime < 500) {
-    if (deltaX > 0) {
-      currentIndex.value = Math.max(0, currentIndex.value - 1)
-    } else {
-      currentIndex.value = Math.min(panoramaImages.value.length - 1, currentIndex.value + 1)
-    }
-  }
+function onSwipeChange(index) {
+  currentIndex.value = index
 }
 
 function goToZone(zoneId) {

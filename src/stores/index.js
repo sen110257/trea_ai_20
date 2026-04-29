@@ -171,12 +171,21 @@ export const useEquipmentStore = defineStore('equipment', () => {
   const categories = ref(equipmentCategories)
   const currentCategory = ref('')
   const favoriteEquipmentIds = ref([])
+  const cartItems = ref([])
   
   const filteredEquipments = computed(() => {
     if (!currentCategory.value) {
       return equipmentList.value
     }
     return equipmentList.value.filter(eq => eq.category === currentCategory.value)
+  })
+  
+  const cartCount = computed(() => {
+    return cartItems.value.reduce((total, item) => total + item.count, 0)
+  })
+  
+  const cartTotalPrice = computed(() => {
+    return cartItems.value.reduce((total, item) => total + item.price * item.count, 0)
   })
   
   function setCategory(category) {
@@ -196,15 +205,52 @@ export const useEquipmentStore = defineStore('equipment', () => {
     return favoriteEquipmentIds.value.includes(equipmentId)
   }
   
+  function addToCart(equipment, count = 1) {
+    const existingItem = cartItems.value.find(item => item.id === equipment.id)
+    if (existingItem) {
+      existingItem.count += count
+    } else {
+      cartItems.value.push({
+        ...equipment,
+        count
+      })
+    }
+  }
+  
+  function removeFromCart(equipmentId) {
+    const index = cartItems.value.findIndex(item => item.id === equipmentId)
+    if (index > -1) {
+      cartItems.value.splice(index, 1)
+    }
+  }
+  
+  function updateCartCount(equipmentId, count) {
+    const item = cartItems.value.find(item => item.id === equipmentId)
+    if (item) {
+      item.count = Math.max(1, count)
+    }
+  }
+  
+  function clearCart() {
+    cartItems.value = []
+  }
+  
   return {
     equipmentList,
     categories,
     currentCategory,
     favoriteEquipmentIds,
+    cartItems,
     filteredEquipments,
+    cartCount,
+    cartTotalPrice,
     setCategory,
     toggleFavorite,
-    isFavorite
+    isFavorite,
+    addToCart,
+    removeFromCart,
+    updateCartCount,
+    clearCart
   }
 })
 
