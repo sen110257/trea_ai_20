@@ -42,6 +42,7 @@
             :class="{ active: currentIndex === index }"
           ></span>
         </div>
+        </div>
       </div>
       
       <div class="panorama-info card">

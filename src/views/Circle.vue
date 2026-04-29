@@ -156,12 +156,9 @@
       </van-tab>
     </van-tabs>
     
-    <van-fab
-      icon="plus"
-      type="primary"
-      @click="showPublishAction"
-      :style="{ right: '20px', bottom: '70px' }"
-    />
+    <div class="fab-button" @click="showPublishAction">
+      <van-icon name="plus" size="24" color="#FFFFFF" />
+    </div>
     
     <van-action-sheet
       v-model:show="showActionSheet"
@@ -529,8 +526,18 @@ function onTeamLoad() {
   border: none;
 }
 
-:deep(.van-fab__button) {
+.fab-button {
+  position: fixed;
+  right: 20px;
+  bottom: 70px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
   background: linear-gradient(135deg, #2D5A27 0%, #4A7C43 100%);
   box-shadow: 0 4px 12px rgba(45, 90, 39, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99;
 }
 </style>

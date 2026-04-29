@@ -29,7 +29,7 @@
       </van-swipe>
       
       <div class="quick-entry card">
-        <van-grid :column-num="4" border="false">
+        <van-grid :column-num="4" :border="false">
           <van-grid-item icon="location-o" text="营地预约" @click="$router.push('/reserve')" />
           <van-grid-item icon="photo-o" text="3D全景" @click="goToPanorama" />
           <van-grid-item icon="chat-o" text="结伴圈子" @click="$router.push('/circle')" />
@@ -156,7 +156,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCampStore, useCircleStore, useUserStore } from '@/stores'
 
@@ -165,7 +165,7 @@ const campStore = useCampStore()
 const circleStore = useCircleStore()
 const userStore = useUserStore()
 
-const searchValue = ''
+const searchValue = ref('')
 const camp = computed(() => campStore.camp)
 const zones = computed(() => campStore.zoneList)
 const posts = computed(() => circleStore.postList)

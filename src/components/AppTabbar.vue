@@ -1,5 +1,5 @@
 <template>
-  <van-tabbar v-model="active" route active-color="#2D5A27" inactive-color="#999999">
+  <van-tabbar :model-value="active" route active-color="#2D5A27" inactive-color="#999999">
     <van-tabbar-item replace to="/home" icon="home-o">首页</van-tabbar-item>
     <van-tabbar-item replace to="/reserve" icon="location-o">营地预约</van-tabbar-item>
     <van-tabbar-item replace to="/circle" icon="chat-o">结伴圈子</van-tabbar-item>
